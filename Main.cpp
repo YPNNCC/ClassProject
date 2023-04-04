@@ -175,8 +175,8 @@ void addUser(int executingPermission) {
 	sanitizeInput(username);
 	sanitizeInput(password);
 
-	if (password.length() < 8) {
-		cout << "Password must be at least 8 characters long.\n";
+	if (!isStrongPassword(password)) {
+		cout << "Password is not strong enough! Must be at least 8 characters long, have at least one uppercase and lowercase letter, and have at least one digit.\n";
 		file.close();
 		return;
 	}
@@ -455,4 +455,16 @@ void sanitizeInput(string& input) {
 	{
 		return validChars.find(c) == string::npos;
 	}), input.end());
+}
+
+bool isStrongPassword(string password) {
+	bool hasUpperCase, hasLowerCase, hasDigit;
+	
+	for (char c : password) {
+		if (isupper(c)) hasUpperCase = true;
+		if (islower(c)) hasLowerCase = true;
+		if (isdigit(c)) hasDigit = true;
+	}
+	
+	return password.length() >= 8 && hasUpperCase && hasLowerCase && hasDigit;
 }
