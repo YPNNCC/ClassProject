@@ -273,6 +273,12 @@ void deleteUser(string executingUsername, int executingPermission) {
         return;
     }
 
+	if (permissionLevel < 0 || permissionLevel > 4) {
+		cout << "Invalid permission level.\n";
+		remove("temp.txt");
+		return;
+	}
+
     remove(fileName.c_str());
     rename("temp.txt", fileName.c_str());
     cout << "User deleted successfully.\n";
