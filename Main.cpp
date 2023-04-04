@@ -236,6 +236,10 @@ void deleteUser(string executingUsername, int executingPermission) {
     cout << "Enter username to delete: ";
     getline(cin, username);
     
+    if (!std::all_of(username.begin(), username.end(), isalnum)) {
+        cout << "Invalid username.\n";
+        return;
+    }
     
     string savedUsername, savedPassword, permissionLevelStr;
     int permissionLevel;
