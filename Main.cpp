@@ -230,17 +230,17 @@ void deleteUser(string executingUsername, int executingPermission) {
         file.close();
         return;
     }
-	
+    
     cout << "Enter username to delete: ";
     getline(cin, username);
     string savedUsername, savedPassword;
-	int savedPermissionLevel;
+    int savedPermissionLevel;
 
     bool foundUser = false;
     while (getline(file, savedPassword)) {
         string decryptedPassword = decrypt(savedPassword);
         savedUsername = decryptedPassword.substr(0, decryptedPassword.find(","));
-		savedPermissionLevel = stoi(decryptedPassword.substr(decryptedPassword.find(",") + 1));
+        savedPermissionLevel = stoi(decryptedPassword.substr(decryptedPassword.find(",") + 1));
         if (savedUsername != username) tempFile << savedUsername << "," << savedPassword << endl;
         else foundUser = true;
     }
@@ -253,11 +253,11 @@ void deleteUser(string executingUsername, int executingPermission) {
         return;
     }
 
-	if (username == executingUsername || executingPermission <= savedPermissionLevel) {
-		cout << "You do not have permission to delete this user.\n";
-		remove("temp.txt");
-		return;
-	}
+    if (username == executingUsername || executingPermission <= savedPermissionLevel) {
+        cout << "You do not have permission to delete this user.\n";
+        remove("temp.txt");
+        return;
+    }
 
     remove(fileName.c_str());
     rename("temp.txt", fileName.c_str());
@@ -265,16 +265,16 @@ void deleteUser(string executingUsername, int executingPermission) {
 }
 
 void printAllUsers() {
-	ifstream file;
-	file.open(fileName);
-	
-	string savedUsername, savedPassword;
-	while (getline(file, savedUsername, ',')) {
-		getline(file, savedPassword);
-		cout << savedUsername << " " << savedPassword << endl;
-	}
+    ifstream file;
+    file.open(fileName);
+    
+    string savedUsername, savedPassword;
+    while (getline(file, savedUsername, ',')) {
+        getline(file, savedPassword);
+        cout << savedUsername << " " << savedPassword << endl;
+    }
 
-	file.close();
+    file.close();
 }
 
 void modifyPermissions(string executingUsername, int executingPermission) {
@@ -304,10 +304,10 @@ void modifyPermissions(string executingUsername, int executingPermission) {
         return;
     }
 
-	if (username == executingUsername) {
-		cout << "You cannot modify your own permissions.\n";
-		return;
-	}
+    if (username == executingUsername) {
+        cout << "You cannot modify your own permissions.\n";
+        return;
+    }
 
     cout << "Enter new permission level (0-4): ";
     cin >> newPermissionLevel;
@@ -318,15 +318,15 @@ void modifyPermissions(string executingUsername, int executingPermission) {
         return;
     }
 
-	if (executingPermission < 3) {
-		cout << "You do not have permission to modify user permissions.\n";
-		return;
-	}
+    if (executingPermission < 3) {
+        cout << "You do not have permission to modify user permissions.\n";
+        return;
+    }
 
-	if (executingPermission == 3 && newPermissionLevel >= 3) {
-		cout << "You do not have permission to modify users with permission level 3 or 4.\n";
-		return;
-	}
+    if (executingPermission == 3 && newPermissionLevel >= 3) {
+        cout << "You do not have permission to modify users with permission level 3 or 4.\n";
+        return;
+    }
 
     file.open(fileName);
     if (file.fail()) {
@@ -410,11 +410,11 @@ void resetPassword() {
 }
 
 string encrypt(string password) {
-	// todo
-	return password;
+    // todo
+    return password;
 }
 
 string decrypt(string password) {
-	// todo
-	return password;
+    // todo
+    return password;
 }
