@@ -15,6 +15,8 @@ void resetPassword();
 string sha256(string&);
 string encrypt(string);
 bool verifyPassword(string, string);
+void sanitizeInput(string&);
+bool isStrongPassword(string);
 
 #endif // !Main
 

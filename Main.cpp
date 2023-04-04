@@ -171,6 +171,15 @@ void addUser(int executingPermission) {
     getline(cin, username);
     cout << "Enter password: ";
     getline(cin, password);
+
+	sanitizeInput(username);
+	sanitizeInput(password);
+
+	if (!isStrongPassword(password)) {
+		cout << "Password is not strong enough! Must be at least 8 characters long, have at least one uppercase and lowercase letter, and have at least one digit.\n";
+		file.close();
+		return;
+	}
 	
 	if (executingPermission >= 3) {
 		cout << "Enter permission level: ";
@@ -230,6 +239,10 @@ void deleteUser(string executingUsername, int executingPermission) {
     cout << "Enter username to delete: ";
     getline(cin, username);
     
+    if (!std::all_of(username.begin(), username.end(), isalnum)) {
+        cout << "Invalid username.\n";
+        return;
+    }
     
     string savedUsername, savedPassword, permissionLevelStr;
     int permissionLevel;
@@ -259,6 +272,12 @@ void deleteUser(string executingUsername, int executingPermission) {
         remove("temp.txt");
         return;
     }
+
+	if (permissionLevel < 0 || permissionLevel > 4) {
+		cout << "Invalid permission level.\n";
+		remove("temp.txt");
+		return;
+	}
 
     remove(fileName.c_str());
     rename("temp.txt", fileName.c_str());
@@ -428,4 +447,24 @@ bool verifyPassword(string password, string hashedPassword) {
 	string salt = "DVgDdXy2k2gUxMGJx7j7BKS2"; // just some random salt
 	string passwordAndSalt = password + salt;
 	return sha256(passwordAndSalt) == hashedPassword;
+}
+
+void sanitizeInput(string& input) {
+	string validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	input.erase(remove_if(input.begin(), input.end(), [&validChars](char c)
+	{
+		return validChars.find(c) == string::npos;
+	}), input.end());
+}
+
+bool isStrongPassword(string password) {
+	bool hasUpperCase, hasLowerCase, hasDigit;
+	
+	for (char c : password) {
+		if (isupper(c)) hasUpperCase = true;
+		if (islower(c)) hasLowerCase = true;
+		if (isdigit(c)) hasDigit = true;
+	}
+	
+	return password.length() >= 8 && hasUpperCase && hasLowerCase && hasDigit;
 }
