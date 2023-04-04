@@ -1,15 +1,21 @@
-#include <functional>
-#include <algorithm>
 #include <iostream>
-#include <iomanip>
 #include <fstream>
-#include <sstream>
 #include <string>
 #include <cstring>
 #include <cstdlib>
 #include "Main.h"
 
 using namespace std;
+
+void doPrep();
+void login();
+void addUser(int);
+void deleteUser(string, int);
+void printAllUsers();
+void modifyPermissions(string, int);
+void resetPassword();
+string encrypt(string);
+string decrypt(string);
 
 const string fileName = "users.txt";
 const string adminUsername = "admin";
@@ -48,7 +54,7 @@ void doPrep() {
 void login() {
 	bool loggedIn = false;
 	string username, password;
-	int permissionLevel;
+	int permissionLevel = 0;
 
 	while (!loggedIn) {
 		cout << "Enter username: ";
@@ -63,17 +69,15 @@ void login() {
 			return;
 		}
 
-		string savedUsername, savedPassword, permissionLevelStr;
+		string savedUsername, savedPassword;
 		while (getline(file, savedUsername, ',')) {
-			getline(file, savedPassword, ',');
-			getline(file, permissionLevelStr);
-			
+			getline(file, savedPassword);
 			if (savedUsername == username) {
-				string hashedPassword = encrypt(password);
-				if (hashedPassword == savedPassword) {
+				string decryptedPassword = decrypt(savedPassword);
+				if (decryptedPassword.substr(0, decryptedPassword.find(",")) == password) {
+					permissionLevel = stoi(decryptedPassword.substr(decryptedPassword.find(",") + 1));
 					loggedIn = true;
-					permissionLevel = stoi(permissionLevelStr);
-					cout << "Successfully logged in as " << username << ". Permission level: " << permissionLevelStr << ".\n";
+					cout << "Successfully logged in as " << username << ". Permission level: " << permissionLevel << ".\n";
 					break;
 				}
 			}
@@ -229,22 +233,17 @@ void deleteUser(string executingUsername, int executingPermission) {
     
     cout << "Enter username to delete: ";
     getline(cin, username);
-    
-    
-    string savedUsername, savedPassword, permissionLevelStr;
-    int permissionLevel;
+    string savedUsername, savedPassword;
+    int savedPermissionLevel;
 
     bool foundUser = false;
-	while (getline(file, savedUsername, ','))
-	{
-		getline(file, savedPassword, ',');
-		getline(file, permissionLevelStr);
-
-		permissionLevel = stoi(permissionLevelStr);
-
-		if (savedUsername != username) tempFile << savedUsername << "," << savedPassword << "," << permissionLevelStr << endl;
-		else foundUser = true;
-	}
+    while (getline(file, savedPassword)) {
+        string decryptedPassword = decrypt(savedPassword);
+        savedUsername = decryptedPassword.substr(0, decryptedPassword.find(","));
+        savedPermissionLevel = stoi(decryptedPassword.substr(decryptedPassword.find(",") + 1));
+        if (savedUsername != username) tempFile << savedUsername << "," << savedPassword << endl;
+        else foundUser = true;
+    }
 
     file.close();
     tempFile.close();
@@ -254,7 +253,7 @@ void deleteUser(string executingUsername, int executingPermission) {
         return;
     }
 
-    if (username == executingUsername || executingPermission <= permissionLevel) {
+    if (username == executingUsername || executingPermission <= savedPermissionLevel) {
         cout << "You do not have permission to delete this user.\n";
         remove("temp.txt");
         return;
@@ -410,22 +409,12 @@ void resetPassword() {
     cout << "Password reset successfully.\n";
 }
 
-string sha256(string& str) {
-	ostringstream os;
-	hash<string> hash_fn;
-	size_t hash = hash_fn(str);
-	os << hex << setfill('0') << setw(16) << hash;
-	return os.str();
-}
-
 string encrypt(string password) {
-	string salt = "DVgDdXy2k2gUxMGJx7j7BKS2"; // just some random salt
-	string passwordAndSalt = password + salt;
-	return sha256(passwordAndSalt);
+    // todo
+    return password;
 }
 
-bool verifyPassword(string password, string hashedPassword) {
-	string salt = "DVgDdXy2k2gUxMGJx7j7BKS2"; // just some random salt
-	string passwordAndSalt = password + salt;
-	return sha256(passwordAndSalt) == hashedPassword;
+string decrypt(string password) {
+    // todo
+    return password;
 }
