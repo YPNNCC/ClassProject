@@ -172,6 +172,9 @@ void addUser(int executingPermission) {
     cout << "Enter password: ";
     getline(cin, password);
 
+	sanitizeInput(username);
+	sanitizeInput(password);
+
 	if (password.length() < 8) {
 		cout << "Password must be at least 8 characters long.\n";
 		file.close();
@@ -438,4 +441,12 @@ bool verifyPassword(string password, string hashedPassword) {
 	string salt = "DVgDdXy2k2gUxMGJx7j7BKS2"; // just some random salt
 	string passwordAndSalt = password + salt;
 	return sha256(passwordAndSalt) == hashedPassword;
+}
+
+void sanitizeInput(string& input) {
+	string validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	input.erase(remove_if(input.begin(), input.end(), [&validChars](char c)
+	{
+		return validChars.find(c) == string::npos;
+	}), input.end());
 }
