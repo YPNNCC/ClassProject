@@ -171,6 +171,12 @@ void addUser(int executingPermission) {
     getline(cin, username);
     cout << "Enter password: ";
     getline(cin, password);
+
+	if (password.length() < 8) {
+		cout << "Password must be at least 8 characters long.\n";
+		file.close();
+		return;
+	}
 	
 	if (executingPermission >= 3) {
 		cout << "Enter permission level: ";
