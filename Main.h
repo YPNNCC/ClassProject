@@ -12,8 +12,9 @@ void deleteUser(string, int);
 void printAllUsers();
 void modifyPermissions(string, int);
 void resetPassword();
+string sha256(string&);
 string encrypt(string);
-string decrypt(string);
+bool verifyPassword(string, string);
 
 #endif // !Main
 
