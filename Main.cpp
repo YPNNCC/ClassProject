@@ -283,10 +283,12 @@ void print_all_users() {
 		return;
 	}
     
-    std::string saved_username, saved_password;
+    std::string saved_username, saved_password, saved_permission_level_str;
     while (getline(file, saved_username, ',')) {
-        getline(file, saved_password);
-        std::cout << saved_username << " " << saved_password << std::endl;
+        getline(file, saved_password, ',');
+    	getline(file, saved_permission_level_str);
+
+        std::cout << saved_username << " - Permission Level: " << saved_permission_level_str << std::endl;
     }
 
     file.close();
@@ -366,7 +368,7 @@ void modify_permissions(const std::string& executing_username, int executing_per
 
     file.close();
     temp_file.close();
-
+	
     remove(file_name);
     rename(temp_file_name, file_name);
 
