@@ -21,23 +21,23 @@ int main() {
 }
 
 void do_prep() {
-    std::fstream file;
-    file.open(file_name);
-    if (file.fail()) {
-        std::string encrypted_password = encrypt(admin_password) + "," + std::to_string(admin_permission_level);
+    std::fstream file(file_name, std::ios::in | std::ios::out);
+    if (!file.is_open()) {
+	    const std::string encrypted_password = encrypt(admin_password) + "," + std::to_string(admin_permission_level);
         file << admin_username << "," << encrypted_password << std::endl;
-        file.close();
-    } else if (file.peek() == std::ifstream::traits_type::eof()) {
-        file.close();
-        std::ofstream file;
-        file.open(file_name);
-
-        std::string encrypted_password = encrypt(admin_password) + "," + std::to_string(admin_permission_level);
-        file << admin_username << "," << encrypted_password << std::endl;
-        file.close();
-    } else {
-        file.close();
+        return;
     }
+	
+    if (file.peek() == std::ifstream::traits_type::eof()) {
+	    file.close();
+
+	    const std::string encrypted_password = encrypt(admin_password) + "," + std::to_string(admin_permission_level);
+	    file << admin_username << "," << encrypted_password << std::endl;
+	    file.close();
+    	return;
+    }
+	
+    file.close();
 }
 
 void login() {
@@ -45,20 +45,21 @@ void login() {
 	std::string username, password;
 	int permission_level = 0;
 
+	std::fstream file(file_name, std::ios::in | std::ios::out);
+	if (!file.is_open()) {
+		std::cout << "Failed to open file.\n";
+		return;
+	}
+
 	while (!logged_in) {
 		std::cout << "Enter username: ";
 		getline(std::cin, username);
 		std::cout << "Enter password: ";
 		getline(std::cin, password);
 
-		std::ifstream file;
-		file.open(file_name);
-		if (file.fail()) {
-			std::cout << "Failed to open file.\n";
-			return;
-		}
-
 		std::string saved_username, saved_password, permission_level_str;
+
+		file.seekg(0, std::ios::beg);
 		while (getline(file, saved_username, ',')) {
 			getline(file, saved_password, ',');
 			getline(file, permission_level_str);
@@ -74,10 +75,15 @@ void login() {
 			}
 		}
 
-		file.close();
-		if (!logged_in) std::cout << "Invalid username or password.\n";
+		if (!logged_in) {
+			std::cout << "Invalid username or password.\n";
+			file.clear();
+			file.seekg(0, std::ios::beg);
+		}
 	}
 
+	file.close();
+	
 	int choice;
 	while (logged_in) {
 		std::cout << "1. Add user (permission level 1)\n";
@@ -155,9 +161,8 @@ void add_user(int executing_permission) {
     std::string username, password;
 	int permission_level = 0;
 	
-	std::ofstream file;
-    file.open(file_name, std::ios::app);
-    if (file.fail()) {
+	std::fstream file(file_name, std::ios::in | std::ios::out);
+    if (!file.is_open()) {
         std::cout << "Failed to open file.\n";
         return;
     }
@@ -186,63 +191,53 @@ void add_user(int executing_permission) {
 			permission_level = 0;
 		}
 	}
-	
-    std::string encrypted_password = encrypt(password) + "," + std::to_string(permission_level);
-	
-    std::ifstream check_file;
-    check_file.open(file_name);
-    if (check_file.fail()) {
-        std::cout << "Failed to open file.\n";
-        file.close();
-        return;
-    }
+
+    const std::string encrypted_password = encrypt(password) + "," + std::to_string(permission_level);
 	
     std::string saved_username, saved_password;
-    while (getline(check_file, saved_username, ',')) {
-        getline(check_file, saved_password);
+
+	file.seekg(0, std::ios::beg);
+	while (getline(file, saved_username, ',')) {
+        getline(file, saved_password);
         if (saved_username == username) {
             std::cout << "Username already exists.\n";
-            check_file.close();
             file.close();
             return;
         }
     }
 
-    check_file.close();
     file << username << "," << encrypted_password << std::endl;
     std::cout << "User added successfully.\n";
     file.close();
 }
 
 void delete_user(const std::string& executing_username, int executing_permission) {
-    std::string username;
-    std::ifstream file;
-    std::ofstream temp_file;
-    file.open(file_name);
-    if (file.fail()) {
-        std::cout << "Failed to open file.\n";
-        return;
-    }
+	std::fstream file(file_name, std::ios::in | std::ios::out);
+	if (!file.is_open()) {
+		std::cout << "Failed to open file.\n";
+		return;
+	}
 
-    temp_file.open("temp.txt");
-    if (temp_file.fail()) {
-        std::cout << "Failed to open file.\n";
-        file.close();
-        return;
-    }
+	std::fstream temp_file(temp_file_name, std::ios::in | std::ios::out | std::ios::app);
+	if (!temp_file.is_open()) {
+		std::cout << "Failed to open temp file.\n";
+		file.close();
+		return;
+	}
     
-    std::cout << "Enter username to delete: ";
-    getline(std::cin, username);
+	std::string username;
+	std::cout << "Enter username to delete: ";
+	getline(std::cin, username);
     
-    if (!std::all_of(username.begin(), username.end(), isalnum)) {
-        std::cout << "Invalid username.\n";
-        return;
-    }
+	if (!std::all_of(username.begin(), username.end(), isalnum)) {
+		std::cout << "Invalid username.\n";
+		return;
+	}
     
-    std::string saved_username, saved_password, permission_level_str;
-    int permission_level = 0;
+	std::string saved_username, saved_password, permission_level_str;
+	int permission_level = 0;
+	bool found_user = false;
 
-    bool found_user = false;
 	while (getline(file, saved_username, ','))
 	{
 		getline(file, saved_password, ',');
@@ -256,6 +251,7 @@ void delete_user(const std::string& executing_username, int executing_permission
 
     file.close();
     temp_file.close();
+	
     if (!found_user) {
         std::cout << "User not found.\n";
         remove(temp_file_name);
@@ -280,8 +276,12 @@ void delete_user(const std::string& executing_username, int executing_permission
 }
 
 void print_all_users() {
-    std::ifstream file;
-    file.open(file_name);
+    std::fstream file(file_name, std::ios::in | std::ios::out);
+	if (!file.is_open())
+	{
+		std::cout << "Failed to open file." << std::endl;
+		return;
+	}
     
     std::string saved_username, saved_password;
     while (getline(file, saved_username, ',')) {
@@ -293,14 +293,16 @@ void print_all_users() {
 }
 
 void modify_permissions(const std::string& executing_username, int executing_permission) {
-    std::string username;
-    int new_permission_level;
+	std::fstream file(file_name, std::ios::in | std::ios::out);
+	if (!file.is_open())
+	{
+		std::cout << "Failed to open file." << std::endl;
+		return;
+	}
 
     std::cout << "Enter username: ";
+	std::string username;
     getline(std::cin, username);
-
-    std::ifstream file;
-    file.open(file_name);
 
     bool found_user = false;
     std::string saved_username, saved_password;
@@ -312,19 +314,20 @@ void modify_permissions(const std::string& executing_username, int executing_per
         }
     }
 
-    file.close();
-
     if (!found_user) {
         std::cout << "User not found.\n";
+    	file.close();
         return;
     }
 
     if (username == executing_username) {
         std::cout << "You cannot modify your own permissions.\n";
+    	file.close();
         return;
     }
 
     std::cout << "Enter new permission level (0-4): ";
+	int new_permission_level;
     std::cin >> new_permission_level;
     std::cin.ignore();
 
@@ -343,20 +346,14 @@ void modify_permissions(const std::string& executing_username, int executing_per
         return;
     }
 
-    file.open(file_name);
-    if (file.fail()) {
-        std::cout << "Failed to open file.\n";
-        return;
-    }
-
-    std::ofstream temp_file;
-    temp_file.open("temp.txt");
-    if (temp_file.fail()) {
-        std::cout << "Failed to open file.\n";
+    std::fstream temp_file(temp_file_name, std::ios::in | std::ios::out | std::ios::app);
+    if (!temp_file.is_open()) {
+		std::cout << "Failed to open temp file.\n";
         file.close();
         return;
     }
 
+	file.seekg(0, std::ios::beg);
     while (getline(file, saved_username, ',')) {
         getline(file, saved_password);
         if (saved_username != username) {
@@ -378,17 +375,16 @@ void modify_permissions(const std::string& executing_username, int executing_per
 
 void reset_password() {
     std::string username;
-    std::ifstream file;
-    std::ofstream temp_file;
-    file.open(file_name);
-    if (file.fail()) {
-        std::cout << "Failed to open file.\n";
+	
+	std::fstream file(file_name, std::ios::in | std::ios::out);
+    if (!file.is_open()) {
+        std::cout << "Failed to open file." << std::endl;
         return;
     }
 
-    temp_file.open("temp.txt");
-    if (temp_file.fail()) {
-        std::cout << "Failed to open file.\n";
+    std::fstream temp_file(file_name, std::ios::in | std::ios::out | std::ios::app);
+    if (!temp_file.is_open()) {
+		std::cout << "Failed to open temp file.\n";
         file.close();
         return;
     }
@@ -397,6 +393,7 @@ void reset_password() {
     getline(std::cin, username);
     std::string saved_username, saved_password;
     bool found_user = false;
+	
     while (getline(file, saved_username, ',')) {
         getline(file, saved_password);
         if (saved_username != username) {
