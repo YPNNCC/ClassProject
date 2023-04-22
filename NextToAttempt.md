@@ -1,9 +1,6 @@
 ### Next Tasks to Attempt
 #### The next few items I will attempt to complete will be as follows:
 
-##### Easy Difficulty:
-- Ensure that the printAllUsers method does not show all users passwords, only show usernames and permission levels.
-
 ##### Medium Difficulty:
 - Ensure that all inputs for all of the methods (ie: addUser) have all user input validated. One current issue is the permissionLevel input from the user which could cause issues.
 - Rework the sanitizeInput method so that it allows additional special characters for passwords which will allow passwords to be stronger.
