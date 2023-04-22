@@ -7,9 +7,11 @@
 #include <string>
 #include "Main.h"
 
-const std::string file_name = "users.txt";
-const std::string admin_username = "admin";
-const std::string admin_password = "admin123";
+const char* file_name = "users.txt";
+const char* temp_file_name = "temp_users.txt";
+
+const char* admin_username = "admin";
+const char* admin_password = "admin123";
 constexpr int admin_permission_level = 4;
 
 int main() {
@@ -256,24 +258,24 @@ void delete_user(const std::string& executing_username, int executing_permission
     temp_file.close();
     if (!found_user) {
         std::cout << "User not found.\n";
-        remove("temp.txt");
+        remove(temp_file_name);
         return;
     }
 
     if (username == executing_username || executing_permission <= permission_level) {
         std::cout << "You do not have permission to delete this user.\n";
-        remove("temp.txt");
+        remove(temp_file_name);
         return;
     }
 
 	if (permission_level < 0 || permission_level > 4) {
 		std::cout << "Invalid permission level.\n";
-		std::remove("temp.txt");
+		std::remove(temp_file_name);
 		return;
 	}
 
-    remove(file_name.c_str());
-    rename("temp.txt", file_name.c_str());
+    remove(file_name);
+    rename(temp_file_name, file_name);
     std::cout << "User deleted successfully.\n";
 }
 
@@ -368,8 +370,8 @@ void modify_permissions(const std::string& executing_username, int executing_per
     file.close();
     temp_file.close();
 
-    remove(file_name.c_str());
-    rename("temp.txt", file_name.c_str());
+    remove(file_name);
+    rename(temp_file_name, file_name);
 
     std::cout << "Permission level updated successfully.\n";
 }
@@ -411,14 +413,15 @@ void reset_password() {
 
     file.close();
     temp_file.close();
+	
     if (!found_user) {
         std::cout << "User not found.\n";
-        remove("temp.txt");
+        remove(temp_file_name);
         return;
     }
 
-    remove(file_name.c_str());
-    rename("temp.txt", file_name.c_str());
+    remove(file_name);
+    rename(temp_file_name, file_name);
     std::cout << "Password reset successfully.\n";
 }
 
@@ -432,13 +435,13 @@ std::string sha256(const std::string& str) {
 
 std::string encrypt(const std::string& password) {
 	const std::string salt = "DVgDdXy2k2gUxMGJx7j7BKS2"; // just some random salt
-	std::string password_and_salt = password + salt;
+	const std::string password_and_salt = password + salt;
 	return sha256(password_and_salt);
 }
 
 bool verify_password(const std::string& password, const std::string& hashed_password) {
 	const std::string salt = "DVgDdXy2k2gUxMGJx7j7BKS2"; // just some random salt
-	std::string password_and_salt = password + salt;
+	const std::string password_and_salt = password + salt;
 	return sha256(password_and_salt) == hashed_password;
 }
 
