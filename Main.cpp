@@ -5,38 +5,33 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <cstring>
-#include <cstdlib>
 #include "Main.h"
 
-const string fileName = "users.txt";
-const string adminUsername = "admin";
-const string adminPassword = "admin123";
-const int adminPermissionLevel = 4;
+const std::string file_name = "users.txt";
+const std::string admin_username = "admin";
+const std::string admin_password = "admin123";
+constexpr int admin_permission_level = 4;
 
 int main() {
-	doPrep();
+	do_prep();
     login();
     return 0;
 }
 
-void doPrep() {
-    ifstream file;
-    file.open(fileName);
+void do_prep() {
+    std::fstream file;
+    file.open(file_name);
     if (file.fail()) {
-        ofstream file;
-        file.open(fileName);
-
-        string encryptedPassword = encrypt(adminPassword) + "," + to_string(adminPermissionLevel);
-        file << adminUsername << "," << encryptedPassword << endl;
+        std::string encrypted_password = encrypt(admin_password) + "," + std::to_string(admin_permission_level);
+        file << admin_username << "," << encrypted_password << std::endl;
         file.close();
-    } else if (file.peek() == ifstream::traits_type::eof()) {
+    } else if (file.peek() == std::ifstream::traits_type::eof()) {
         file.close();
-        ofstream file;
-        file.open(fileName);
+        std::ofstream file;
+        file.open(file_name);
 
-        string encryptedPassword = encrypt(adminPassword) + "," + to_string(adminPermissionLevel);
-        file << adminUsername << "," << encryptedPassword << endl;
+        std::string encrypted_password = encrypt(admin_password) + "," + std::to_string(admin_permission_level);
+        file << admin_username << "," << encrypted_password << std::endl;
         file.close();
     } else {
         file.close();
@@ -44,425 +39,425 @@ void doPrep() {
 }
 
 void login() {
-	bool loggedIn = false;
-	string username, password;
-	int permissionLevel;
+	bool logged_in = false;
+	std::string username, password;
+	int permission_level = 0;
 
-	while (!loggedIn) {
-		cout << "Enter username: ";
-		getline(cin, username);
-		cout << "Enter password: ";
-		getline(cin, password);
+	while (!logged_in) {
+		std::cout << "Enter username: ";
+		getline(std::cin, username);
+		std::cout << "Enter password: ";
+		getline(std::cin, password);
 
-		ifstream file;
-		file.open(fileName);
+		std::ifstream file;
+		file.open(file_name);
 		if (file.fail()) {
-			cout << "Failed to open file.\n";
+			std::cout << "Failed to open file.\n";
 			return;
 		}
 
-		string savedUsername, savedPassword, permissionLevelStr;
-		while (getline(file, savedUsername, ',')) {
-			getline(file, savedPassword, ',');
-			getline(file, permissionLevelStr);
+		std::string saved_username, saved_password, permission_level_str;
+		while (getline(file, saved_username, ',')) {
+			getline(file, saved_password, ',');
+			getline(file, permission_level_str);
 			
-			if (savedUsername == username) {
-				string hashedPassword = encrypt(password);
-				if (hashedPassword == savedPassword) {
-					loggedIn = true;
-					permissionLevel = stoi(permissionLevelStr);
-					cout << "Successfully logged in as " << username << ". Permission level: " << permissionLevelStr << ".\n";
+			if (saved_username == username) {
+				std::string hashed_password = encrypt(password);
+				if (hashed_password == saved_password) {
+					logged_in = true;
+					permission_level = stoi(permission_level_str);
+					std::cout << "Successfully logged in as " << username << ". Permission level: " << permission_level_str << ".\n";
 					break;
 				}
 			}
 		}
 
 		file.close();
-		if (!loggedIn) cout << "Invalid username or password.\n";
+		if (!logged_in) std::cout << "Invalid username or password.\n";
 	}
 
 	int choice;
-	while (loggedIn) {
-		cout << "1. Add user (permission level 1)\n";
-		cout << "2. Delete user (permission level 2)\n";
-		cout << "3. View all users (permission level 3)\n";
-		cout << "4. Reset user password (permission level 3)\n";
-		cout << "5. Modify user permissions (permission level 4)\n";
-		cout << "6. Exit\n";
-		cout << "Enter choice: ";
-		cin >> choice;
+	while (logged_in) {
+		std::cout << "1. Add user (permission level 1)\n";
+		std::cout << "2. Delete user (permission level 2)\n";
+		std::cout << "3. View all users (permission level 3)\n";
+		std::cout << "4. Reset user password (permission level 3)\n";
+		std::cout << "5. Modify user permissions (permission level 4)\n";
+		std::cout << "6. Exit\n";
+		std::cout << "Enter choice: ";
+		std::cin >> choice;
 
-        if (cin.fail()) {
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "\n\nInvalid choice.\n\n";
+        if (std::cin.fail()) {
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "\n\nInvalid choice.\n\n";
             continue;
         }
 
-		cin.ignore();
+		std::cin.ignore();
 
 		switch (choice) {
 			case 1:
-				if (permissionLevel >= 1) {
-					addUser(permissionLevel);
+				if (permission_level >= 1) {
+					add_user(permission_level);
 					break;
 				}
 
-				cout << "You do not have permission to add users.\n";
+				std::cout << "You do not have permission to add users.\n";
 				break;
 			case 2:
-				if (permissionLevel >= 2) {
-					deleteUser(username, permissionLevel);
+				if (permission_level >= 2) {
+					delete_user(username, permission_level);
 					break;
 				}
 				
-				cout << "You do not have permission to delete users.\n";
+				std::cout << "You do not have permission to delete users.\n";
 				break;
 			case 3:
-				if (permissionLevel >= 3) {
-					printAllUsers();
+				if (permission_level >= 3) {
+					print_all_users();
 					break;
 				}
 
-				cout << "You do not have permission to view all users.\n";
+				std::cout << "You do not have permission to view all users.\n";
 				break;
 			case 4:
-				if (permissionLevel >= 3) {
-					resetPassword();
+				if (permission_level >= 3) {
+					reset_password();
 					break;
 				}
 
-				cout << "You do not have permission to reset user passwords.\n";
+				std::cout << "You do not have permission to reset user passwords.\n";
 				break;
 			case 5:
-				if (permissionLevel >= 4) {
-					modifyPermissions(username, permissionLevel);
+				if (permission_level >= 4) {
+					modify_permissions(username, permission_level);
 					break;
 				}
 
-				cout << "You do not have permission to modify user permissions.\n";
+				std::cout << "You do not have permission to modify user permissions.\n";
 				break;
 			case 6:
-				loggedIn = false;
+				logged_in = false;
 				break;
 			default:
-				cout << "Invalid choice.\n";
+				std::cout << "Invalid choice.\n";
 				break;
 		}
 
-		cout << endl;
+		std::cout << std::endl;
 	}
 }
 
-void addUser(int executingPermission) {
-    string username, password;
-	int permissionLevel = 0;
+void add_user(int executing_permission) {
+    std::string username, password;
+	int permission_level = 0;
 	
-	ofstream file;
-    file.open(fileName, ios::app);
+	std::ofstream file;
+    file.open(file_name, std::ios::app);
     if (file.fail()) {
-        cout << "Failed to open file.\n";
+        std::cout << "Failed to open file.\n";
         return;
     }
 	
-    cout << "Enter username: ";
-    getline(cin, username);
-    cout << "Enter password: ";
-    getline(cin, password);
+    std::cout << "Enter username: ";
+    getline(std::cin, username);
+    std::cout << "Enter password: ";
+    getline(std::cin, password);
 
-	sanitizeInput(username);
-	sanitizeInput(password);
+	sanitize_input(username);
+	sanitize_input(password);
 
-	if (!isStrongPassword(password)) {
-		cout << "Password is not strong enough! Must be at least 8 characters long, have at least one uppercase and lowercase letter, and have at least one digit.\n";
+	if (!is_strong_password(password)) {
+		std::cout << "Password is not strong enough! Must be at least 8 characters long, have at least one uppercase and lowercase letter, and have at least one digit.\n";
 		file.close();
 		return;
 	}
 	
-	if (executingPermission >= 3) {
-		cout << "Enter permission level: ";
-		cin >> permissionLevel;
-		cin.ignore();
+	if (executing_permission >= 3) {
+		std::cout << "Enter permission level: ";
+		std::cin >> permission_level;
+		std::cin.ignore();
 
-		if (permissionLevel < 1 || permissionLevel > 4) {
-			cout << "Invalid permission level. Defaulting to 0.\n";
-			permissionLevel = 0;
+		if (permission_level < 1 || permission_level > 4) {
+			std::cout << "Invalid permission level. Defaulting to 0.\n";
+			permission_level = 0;
 		}
 	}
 	
-    string encryptedPassword = encrypt(password) + "," + to_string(permissionLevel);
+    std::string encrypted_password = encrypt(password) + "," + std::to_string(permission_level);
 	
-    ifstream checkFile;
-    checkFile.open(fileName);
-    if (checkFile.fail()) {
-        cout << "Failed to open file.\n";
+    std::ifstream check_file;
+    check_file.open(file_name);
+    if (check_file.fail()) {
+        std::cout << "Failed to open file.\n";
         file.close();
         return;
     }
 	
-    string savedUsername, savedPassword;
-    while (getline(checkFile, savedUsername, ',')) {
-        getline(checkFile, savedPassword);
-        if (savedUsername == username) {
-            cout << "Username already exists.\n";
-            checkFile.close();
+    std::string saved_username, saved_password;
+    while (getline(check_file, saved_username, ',')) {
+        getline(check_file, saved_password);
+        if (saved_username == username) {
+            std::cout << "Username already exists.\n";
+            check_file.close();
             file.close();
             return;
         }
     }
 
-    checkFile.close();
-    file << username << "," << encryptedPassword << endl;
-    cout << "User added successfully.\n";
+    check_file.close();
+    file << username << "," << encrypted_password << std::endl;
+    std::cout << "User added successfully.\n";
     file.close();
 }
 
-void deleteUser(string executingUsername, int executingPermission) {
-    string username;
-    ifstream file;
-    ofstream tempFile;
-    file.open(fileName);
+void delete_user(const std::string& executing_username, int executing_permission) {
+    std::string username;
+    std::ifstream file;
+    std::ofstream temp_file;
+    file.open(file_name);
     if (file.fail()) {
-        cout << "Failed to open file.\n";
+        std::cout << "Failed to open file.\n";
         return;
     }
 
-    tempFile.open("temp.txt");
-    if (tempFile.fail()) {
-        cout << "Failed to open file.\n";
+    temp_file.open("temp.txt");
+    if (temp_file.fail()) {
+        std::cout << "Failed to open file.\n";
         file.close();
         return;
     }
     
-    cout << "Enter username to delete: ";
-    getline(cin, username);
+    std::cout << "Enter username to delete: ";
+    getline(std::cin, username);
     
     if (!std::all_of(username.begin(), username.end(), isalnum)) {
-        cout << "Invalid username.\n";
+        std::cout << "Invalid username.\n";
         return;
     }
     
-    string savedUsername, savedPassword, permissionLevelStr;
-    int permissionLevel;
+    std::string saved_username, saved_password, permission_level_str;
+    int permission_level = 0;
 
-    bool foundUser = false;
-	while (getline(file, savedUsername, ','))
+    bool found_user = false;
+	while (getline(file, saved_username, ','))
 	{
-		getline(file, savedPassword, ',');
-		getline(file, permissionLevelStr);
+		getline(file, saved_password, ',');
+		getline(file, permission_level_str);
 
-		permissionLevel = stoi(permissionLevelStr);
+		permission_level = stoi(permission_level_str);
 
-		if (savedUsername != username) tempFile << savedUsername << "," << savedPassword << "," << permissionLevelStr << endl;
-		else foundUser = true;
+		if (saved_username != username) temp_file << saved_username << "," << saved_password << "," << permission_level_str << std::endl;
+		else found_user = true;
 	}
 
     file.close();
-    tempFile.close();
-    if (!foundUser) {
-        cout << "User not found.\n";
+    temp_file.close();
+    if (!found_user) {
+        std::cout << "User not found.\n";
         remove("temp.txt");
         return;
     }
 
-    if (username == executingUsername || executingPermission <= permissionLevel) {
-        cout << "You do not have permission to delete this user.\n";
+    if (username == executing_username || executing_permission <= permission_level) {
+        std::cout << "You do not have permission to delete this user.\n";
         remove("temp.txt");
         return;
     }
 
-	if (permissionLevel < 0 || permissionLevel > 4) {
-		cout << "Invalid permission level.\n";
-		remove("temp.txt");
+	if (permission_level < 0 || permission_level > 4) {
+		std::cout << "Invalid permission level.\n";
+		std::remove("temp.txt");
 		return;
 	}
 
-    remove(fileName.c_str());
-    rename("temp.txt", fileName.c_str());
-    cout << "User deleted successfully.\n";
+    remove(file_name.c_str());
+    rename("temp.txt", file_name.c_str());
+    std::cout << "User deleted successfully.\n";
 }
 
-void printAllUsers() {
-    ifstream file;
-    file.open(fileName);
+void print_all_users() {
+    std::ifstream file;
+    file.open(file_name);
     
-    string savedUsername, savedPassword;
-    while (getline(file, savedUsername, ',')) {
-        getline(file, savedPassword);
-        cout << savedUsername << " " << savedPassword << endl;
+    std::string saved_username, saved_password;
+    while (getline(file, saved_username, ',')) {
+        getline(file, saved_password);
+        std::cout << saved_username << " " << saved_password << std::endl;
     }
 
     file.close();
 }
 
-void modifyPermissions(string executingUsername, int executingPermission) {
-    string username;
-    int newPermissionLevel;
+void modify_permissions(const std::string& executing_username, int executing_permission) {
+    std::string username;
+    int new_permission_level;
 
-    cout << "Enter username: ";
-    getline(cin, username);
+    std::cout << "Enter username: ";
+    getline(std::cin, username);
 
-    ifstream file;
-    file.open(fileName);
+    std::ifstream file;
+    file.open(file_name);
 
-    bool foundUser = false;
-    string savedUsername, savedPassword;
-    while (getline(file, savedUsername, ',')) {
-        getline(file, savedPassword);
-        if (savedUsername == username) {
-            foundUser = true;
+    bool found_user = false;
+    std::string saved_username, saved_password;
+    while (getline(file, saved_username, ',')) {
+        getline(file, saved_password);
+        if (saved_username == username) {
+            found_user = true;
             break;
         }
     }
 
     file.close();
 
-    if (!foundUser) {
-        cout << "User not found.\n";
+    if (!found_user) {
+        std::cout << "User not found.\n";
         return;
     }
 
-    if (username == executingUsername) {
-        cout << "You cannot modify your own permissions.\n";
+    if (username == executing_username) {
+        std::cout << "You cannot modify your own permissions.\n";
         return;
     }
 
-    cout << "Enter new permission level (0-4): ";
-    cin >> newPermissionLevel;
-    cin.ignore();
+    std::cout << "Enter new permission level (0-4): ";
+    std::cin >> new_permission_level;
+    std::cin.ignore();
 
-    if (newPermissionLevel < 0 || newPermissionLevel > 4) {
-        cout << "Invalid permission level.\n";
+    if (new_permission_level < 0 || new_permission_level > 4) {
+        std::cout << "Invalid permission level.\n";
         return;
     }
 
-    if (executingPermission < 3) {
-        cout << "You do not have permission to modify user permissions.\n";
+    if (executing_permission < 3) {
+        std::cout << "You do not have permission to modify user permissions.\n";
         return;
     }
 
-    if (executingPermission == 3 && newPermissionLevel >= 3) {
-        cout << "You do not have permission to modify users with permission level 3 or 4.\n";
+    if (executing_permission == 3 && new_permission_level >= 3) {
+        std::cout << "You do not have permission to modify users with permission level 3 or 4.\n";
         return;
     }
 
-    file.open(fileName);
+    file.open(file_name);
     if (file.fail()) {
-        cout << "Failed to open file.\n";
+        std::cout << "Failed to open file.\n";
         return;
     }
 
-    ofstream tempFile;
-    tempFile.open("temp.txt");
-    if (tempFile.fail()) {
-        cout << "Failed to open file.\n";
+    std::ofstream temp_file;
+    temp_file.open("temp.txt");
+    if (temp_file.fail()) {
+        std::cout << "Failed to open file.\n";
         file.close();
         return;
     }
 
-    while (getline(file, savedUsername, ',')) {
-        getline(file, savedPassword);
-        if (savedUsername != username) {
-            tempFile << savedUsername << "," << savedPassword << endl;
+    while (getline(file, saved_username, ',')) {
+        getline(file, saved_password);
+        if (saved_username != username) {
+            temp_file << saved_username << "," << saved_password << std::endl;
         } else {
-            string encryptedPassword = savedPassword.substr(0, savedPassword.find(",")) + "," + to_string(newPermissionLevel);
-            tempFile << savedUsername << "," << encryptedPassword << endl;
+            std::string encrypted_password = saved_password.substr(0, saved_password.find(",")) + "," + std::to_string(new_permission_level);
+            temp_file << saved_username << "," << encrypted_password << std::endl;
         }
     }
 
     file.close();
-    tempFile.close();
+    temp_file.close();
 
-    remove(fileName.c_str());
-    rename("temp.txt", fileName.c_str());
+    remove(file_name.c_str());
+    rename("temp.txt", file_name.c_str());
 
-    cout << "Permission level updated successfully.\n";
+    std::cout << "Permission level updated successfully.\n";
 }
 
-void resetPassword() {
-    string username;
-    ifstream file;
-    ofstream tempFile;
-    file.open(fileName);
+void reset_password() {
+    std::string username;
+    std::ifstream file;
+    std::ofstream temp_file;
+    file.open(file_name);
     if (file.fail()) {
-        cout << "Failed to open file.\n";
+        std::cout << "Failed to open file.\n";
         return;
     }
 
-    tempFile.open("temp.txt");
-    if (tempFile.fail()) {
-        cout << "Failed to open file.\n";
+    temp_file.open("temp.txt");
+    if (temp_file.fail()) {
+        std::cout << "Failed to open file.\n";
         file.close();
         return;
     }
 
-    cout << "Enter username to reset password: ";
-    getline(cin, username);
-    string savedUsername, savedPassword;
-    bool foundUser = false;
-    while (getline(file, savedUsername, ',')) {
-        getline(file, savedPassword);
-        if (savedUsername != username) {
-            tempFile << savedUsername << "," << savedPassword << endl;
+    std::cout << "Enter username to reset password: ";
+    getline(std::cin, username);
+    std::string saved_username, saved_password;
+    bool found_user = false;
+    while (getline(file, saved_username, ',')) {
+        getline(file, saved_password);
+        if (saved_username != username) {
+            temp_file << saved_username << "," << saved_password << std::endl;
         } else {
-            foundUser = true;
-            string newPassword;
-            cout << "Enter new password: ";
-            getline(cin, newPassword);
-            string encryptedPassword = encrypt(newPassword) + "," + savedPassword.substr(savedPassword.find(",") + 1);
-            tempFile << savedUsername << "," << encryptedPassword << endl;
+            found_user = true;
+            std::string new_password;
+            std::cout << "Enter new password: ";
+            getline(std::cin, new_password);
+            std::string encrypted_password = encrypt(new_password) + "," + saved_password.substr(saved_password.find(",") + 1);
+            temp_file << saved_username << "," << encrypted_password << std::endl;
         }
     }
 
     file.close();
-    tempFile.close();
-    if (!foundUser) {
-        cout << "User not found.\n";
+    temp_file.close();
+    if (!found_user) {
+        std::cout << "User not found.\n";
         remove("temp.txt");
         return;
     }
 
-    remove(fileName.c_str());
-    rename("temp.txt", fileName.c_str());
-    cout << "Password reset successfully.\n";
+    remove(file_name.c_str());
+    rename("temp.txt", file_name.c_str());
+    std::cout << "Password reset successfully.\n";
 }
 
-string sha256(string& str) {
-	ostringstream os;
-	hash<string> hash_fn;
-	size_t hash = hash_fn(str);
-	os << hex << setfill('0') << setw(16) << hash;
+std::string sha256(const std::string& str) {
+	std::ostringstream os;
+	constexpr std::hash<std::string> hash_fn;
+	const size_t hash = hash_fn(str);
+	os << std::hex << std::setfill('0') << std::setw(16) << hash;
 	return os.str();
 }
 
-string encrypt(string password) {
-	string salt = "DVgDdXy2k2gUxMGJx7j7BKS2"; // just some random salt
-	string passwordAndSalt = password + salt;
-	return sha256(passwordAndSalt);
+std::string encrypt(const std::string& password) {
+	const std::string salt = "DVgDdXy2k2gUxMGJx7j7BKS2"; // just some random salt
+	std::string password_and_salt = password + salt;
+	return sha256(password_and_salt);
 }
 
-bool verifyPassword(string password, string hashedPassword) {
-	string salt = "DVgDdXy2k2gUxMGJx7j7BKS2"; // just some random salt
-	string passwordAndSalt = password + salt;
-	return sha256(passwordAndSalt) == hashedPassword;
+bool verify_password(const std::string& password, const std::string& hashed_password) {
+	const std::string salt = "DVgDdXy2k2gUxMGJx7j7BKS2"; // just some random salt
+	std::string password_and_salt = password + salt;
+	return sha256(password_and_salt) == hashed_password;
 }
 
-void sanitizeInput(string& input) {
-	string validChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-	input.erase(remove_if(input.begin(), input.end(), [&validChars](char c)
+void sanitize_input(std::string& input) {
+	std::string valid_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	input.erase(remove_if(input.begin(), input.end(), [&valid_chars](const char c)
 	{
-		return validChars.find(c) == string::npos;
+		return valid_chars.find(c) == std::string::npos;
 	}), input.end());
 }
 
-bool isStrongPassword(string password) {
-	bool hasUpperCase, hasLowerCase, hasDigit;
+bool is_strong_password(const std::string& password) {
+	bool has_upper_case = false, has_lower_case = false, has_digit = false;
 	
-	for (char c : password) {
-		if (isupper(c)) hasUpperCase = true;
-		if (islower(c)) hasLowerCase = true;
-		if (isdigit(c)) hasDigit = true;
+	for (const char c : password) {
+		if (isupper(c)) has_upper_case = true;
+		if (islower(c)) has_lower_case = true;
+		if (isdigit(c)) has_digit = true;
 	}
 	
-	return password.length() >= 8 && hasUpperCase && hasLowerCase && hasDigit;
+	return password.length() >= 8 && has_upper_case && has_lower_case && has_digit;
 }
