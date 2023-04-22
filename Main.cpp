@@ -9,8 +9,6 @@
 #include <cstdlib>
 #include "Main.h"
 
-using namespace std;
-
 const string fileName = "users.txt";
 const string adminUsername = "admin";
 const string adminPassword = "admin123";
